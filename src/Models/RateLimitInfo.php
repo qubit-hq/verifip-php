@@ -7,7 +7,7 @@ namespace VerifIP\Models;
 /**
  * Rate limit information parsed from response headers.
  */
-final readonly class RateLimitInfo
+final class RateLimitInfo
 {
     public function __construct(
         public int $limit = 0,

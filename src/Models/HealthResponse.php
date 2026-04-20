@@ -7,7 +7,7 @@ namespace VerifIP\Models;
 /**
  * Response from the health check endpoint.
  */
-final readonly class HealthResponse
+final class HealthResponse
 {
     public function __construct(
         public string $status = '',

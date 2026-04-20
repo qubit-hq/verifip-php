@@ -7,7 +7,7 @@ namespace VerifIP\Models;
 /**
  * Response from a batch IP check.
  */
-final readonly class BatchResponse
+final class BatchResponse
 {
     /**
      * @param list<CheckResponse> $results

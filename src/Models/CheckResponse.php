@@ -7,7 +7,7 @@ namespace VerifIP\Models;
 /**
  * Response from a single IP check.
  */
-final readonly class CheckResponse
+final class CheckResponse
 {
     public function __construct(
         public string $requestId = '',
