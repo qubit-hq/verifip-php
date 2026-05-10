@@ -28,7 +28,7 @@ use VerifIP\Models\WHOISResponse;
 class Client
 {
     private const VERSION = '0.1.0';
-    private const USER_AGENT = 'verifip-php/0.1.4';
+    private const USER_AGENT = 'verifip-php/0.2.0';
     private const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504];
 
     private ?RateLimitInfo $rateLimit = null;
