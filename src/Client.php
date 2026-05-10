@@ -9,10 +9,16 @@ use VerifIP\Exceptions\InvalidRequestException;
 use VerifIP\Exceptions\RateLimitException;
 use VerifIP\Exceptions\ServerException;
 use VerifIP\Exceptions\VerifIPException;
+use VerifIP\Models\AssessResponse;
 use VerifIP\Models\BatchResponse;
 use VerifIP\Models\CheckResponse;
+use VerifIP\Models\EmailResponse;
 use VerifIP\Models\HealthResponse;
+use VerifIP\Models\PhoneResponse;
 use VerifIP\Models\RateLimitInfo;
+use VerifIP\Models\ReportResponse;
+use VerifIP\Models\URLResponse;
+use VerifIP\Models\WHOISResponse;
 
 /**
  * Client for the VerifIP IP fraud scoring API.
@@ -78,6 +84,136 @@ class Client
         $data = $this->request('POST', '/v1/check/batch', body: $body);
 
         return BatchResponse::fromArray($data);
+    }
+
+    /**
+     * Check a single email address for risk.
+     *
+     * @throws InvalidRequestException If the email is malformed.
+     * @throws AuthenticationException If the API key is invalid or disabled.
+     * @throws RateLimitException If the daily limit is exceeded.
+     */
+    public function checkEmail(string $email): EmailResponse
+    {
+        if ($email === '') {
+            throw new \InvalidArgumentException('email is required');
+        }
+
+        $data = $this->request('GET', '/v1/check/email?email=' . urlencode($email));
+
+        return EmailResponse::fromArray($data);
+    }
+
+    /**
+     * Check a phone number for risk.
+     *
+     * @throws InvalidRequestException If the phone number is malformed.
+     * @throws AuthenticationException If the API key is invalid or disabled.
+     * @throws RateLimitException If the daily limit is exceeded.
+     */
+    public function checkPhone(string $phone): PhoneResponse
+    {
+        if ($phone === '') {
+            throw new \InvalidArgumentException('phone is required');
+        }
+
+        $data = $this->request('GET', '/v1/check/phone?phone=' . urlencode($phone));
+
+        return PhoneResponse::fromArray($data);
+    }
+
+    /**
+     * Check a URL for reputation and threats.
+     *
+     * @throws InvalidRequestException If the URL is malformed.
+     * @throws AuthenticationException If the API key is invalid or disabled.
+     * @throws RateLimitException If the daily limit is exceeded.
+     */
+    public function checkUrl(string $url): URLResponse
+    {
+        if ($url === '') {
+            throw new \InvalidArgumentException('url is required');
+        }
+
+        $data = $this->request('GET', '/v1/check/url?url=' . urlencode($url));
+
+        return URLResponse::fromArray($data);
+    }
+
+    /**
+     * Perform a WHOIS lookup for an IP address.
+     *
+     * @throws InvalidRequestException If the IP is malformed.
+     * @throws AuthenticationException If the API key is invalid or disabled.
+     * @throws RateLimitException If the daily limit is exceeded.
+     */
+    public function checkWhois(string $ip): WHOISResponse
+    {
+        if ($ip === '') {
+            throw new \InvalidArgumentException('ip is required');
+        }
+
+        $data = $this->request('GET', '/v1/whois?ip=' . urlencode($ip));
+
+        return WHOISResponse::fromArray($data);
+    }
+
+    /**
+     * Report an IP address as fraudulent or legitimate.
+     *
+     * @throws AuthenticationException If the API key is invalid or disabled.
+     * @throws RateLimitException If the daily limit is exceeded.
+     */
+    public function report(string $ip, bool $isFraud, string $category = '', string $comment = ''): ReportResponse
+    {
+        if ($ip === '') {
+            throw new \InvalidArgumentException('ip is required');
+        }
+
+        $payload = ['ip' => $ip, 'is_fraud' => $isFraud];
+        if ($category !== '') {
+            $payload['category'] = $category;
+        }
+        if ($comment !== '') {
+            $payload['comment'] = $comment;
+        }
+
+        $body = json_encode($payload, JSON_THROW_ON_ERROR);
+        $data = $this->request('POST', '/v1/report', body: $body);
+
+        return ReportResponse::fromArray($data);
+    }
+
+    /**
+     * Run a unified risk assessment across multiple entity types.
+     *
+     * @throws AuthenticationException If the API key is invalid or disabled.
+     * @throws RateLimitException If the daily limit is exceeded.
+     */
+    public function assess(string $ip = '', string $email = '', string $phone = '', string $url = ''): AssessResponse
+    {
+        $payload = [];
+        if ($ip !== '') {
+            $payload['ip'] = $ip;
+        }
+        if ($email !== '') {
+            $payload['email'] = $email;
+        }
+        if ($phone !== '') {
+            $payload['phone'] = $phone;
+        }
+        if ($url !== '') {
+            $payload['url'] = $url;
+        }
+
+        if ($payload === []) {
+            throw new \InvalidArgumentException('At least one parameter (ip, email, phone, or url) is required');
+        }
+
+        $body = json_encode($payload, JSON_THROW_ON_ERROR);
+        $data = $this->request('POST', '/v1/assess', body: $body);
+
+        return AssessResponse::fromArray($data);
     }
 
     /**
